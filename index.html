@@ -297,7 +297,7 @@ body {
 }
 #input-keys {
   width: 468px; /* 480 - 6*2 */
-  height: 72px;
+  height: 72px; /* 18*4 */
   background: rgb(255,255,255,0.8);
   display: flex;
   flex-direction: row;
@@ -313,6 +313,8 @@ body {
   text-align: center;
   box-sizing: border-box;
   border: 1px solid rgba(0,0,0,0);
+  /*vertical-align: center;*/
+  line-height: 1em;
 }
 
 .input-key--highlight {
@@ -354,7 +356,7 @@ body {
 <footer>© 2012 – 2013 <a href="http://endrift.com/">Jeffrey Pfau</a></footer>
 <script>
 window.autoInput = () => {
-  const eventInterval = 8;
+  const eventInterval = 32;
 
   const dispatch = (code) => {
     const down=new KeyboardEvent("keydown", { keyCode: code });
@@ -438,14 +440,23 @@ window.autoInput = () => {
   const inputBox = document.getElementById('input-keys');
 
   const keys = [];
+
+  const initializeDom = () => {
+    inputBox.innerHTML = '<div class="input-key">x</div>'.repeat(104)
+  };
+
+  initializeDom();
+
   let i = 0;
   const timerId = setInterval(() => {
     const input = getRandom();
     dispatch(input.code);
-    keys[i%104] = input.name;
-    inputBox.innerHTML = keys.map((s, idx) => {
-      return `<div class="input-key ${idx===i%104?"input-key--highlight":""}">${s}</div>`;
-    }).join('');
+    const targets = document.getElementsByClassName('input-key');
+    const current = targets[i%104];
+    const prev = targets[(i+103)%104];
+    current.textContent = input.name;
+    current.classList.add("input-key--highlight");
+    prev.classList.remove("input-key--highlight");
     i++;
   }, eventInterval * 2);
   return timerId;
