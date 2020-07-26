@@ -285,6 +285,43 @@ document.addEventListener('webkitfullscreenchange', function() {
 </script>
 </head>
 <body>
+<style>
+body {
+  background: url("https://www.toptal.com/designers/subtlepatterns/patterns/oriental-tiles.png");
+  background-size: 200px;
+}
+#input-keys-wrap {
+  position: absolute;
+  top: 405px; /* 85+320 */
+  display: inline; /* crazy */
+}
+#input-keys {
+  width: 468px; /* 480 - 6*2 */
+  height: 72px;
+  background: rgb(255,255,255,0.8);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 3px 6px;
+}
+.input-key {
+  font-size: 16px;
+  color: #444;
+  text-shadow: none;
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,0);
+}
+
+.input-key--highlight {
+  border: 1px solid #AE61A8;
+}
+</style>
+<div id="input-keys-wrap">
+  <div id="input-keys"></div>
+</div>
 <canvas id="screen" width="480" height="320"></canvas>
 <section id="controls">
 	<div id="preload">
@@ -315,5 +352,106 @@ document.addEventListener('webkitfullscreenchange', function() {
 	<li><a href="https://github.com/endrift/gbajs/wiki/Compatibility-List">Compatibility list</a></li>
 </ul>
 <footer>© 2012 – 2013 <a href="http://endrift.com/">Jeffrey Pfau</a></footer>
+<script>
+window.autoInput = () => {
+  const eventInterval = 8;
+
+  const dispatch = (code) => {
+    const down=new KeyboardEvent("keydown", { keyCode: code });
+    document.dispatchEvent(down);
+    setTimeout(() => {
+      const up=new KeyboardEvent("keyup", { keyCode: code });
+      document.dispatchEvent(up);
+    }, eventInterval);
+  };
+
+  const keyMapping = {
+    a: {
+      code: 90,
+      name: "A",
+      weight: 50,
+    },
+    b: {
+      code: 88,
+      name: "B",
+      weight: 10,
+    },
+    l: {
+      code: 65,
+      name: "L",
+      weight: 2,
+    },
+    r: {
+      code: 83,
+      name: "R",
+      weight: 2,
+    },
+    /* start: 13, */
+    /* select: 220, */
+    left: {
+      code: 37,
+      name: "←",
+      weight: 300,
+    },
+    right: {
+      code: 38,
+      name: "→",
+      weight: 300,
+    },
+    up: {
+      code: 39,
+      name: "↑",
+      weight: 300,
+    },
+    down: {
+      code: 40,
+      name: "↓",
+      weight: 300,
+    },
+    start: {
+      code: 13,
+      name: "↵",
+      weight: 0.1,
+    },
+    select: {
+      code: 220,
+      name: "⌥",
+      weight: 0.1,
+    },
+  };
+
+  const getRandom = () => {
+    const weightSum = Object.values(keyMapping)
+      .map(o => o.weight)
+      .reduce((a, b) => a + b);
+    const randomWeight = Math.random() * weightSum;
+    let currentWeight = 0;
+    for (const o of Object.values(keyMapping)) {
+      currentWeight += o.weight;
+      if (currentWeight >= randomWeight) {
+        return o;
+      }
+    }
+    // dead code. it should be returned in for block
+  };
+
+  const inputBox = document.getElementById('input-keys');
+
+  const keys = [];
+  let i = 0;
+  const timerId = setInterval(() => {
+    const input = getRandom();
+    dispatch(input.code);
+    keys[i%104] = input.name;
+    inputBox.innerHTML = keys.map((s, idx) => {
+      return `<div class="input-key ${idx===i%104?"input-key--highlight":""}">${s}</div>`;
+    }).join('');
+    i++;
+  }, eventInterval * 2);
+  return timerId;
+};
+
+window.timerId = autoInput();
+</script>
 </body>
 </html>
